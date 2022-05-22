@@ -94,6 +94,7 @@ services:
     restart: always
     image: minio/minio:latest
     volumes:
+         - /mnt/path to ND
          - ${PWD}/persistent/miniodata:/data:cached
     ports:
          - "9000:9000"
