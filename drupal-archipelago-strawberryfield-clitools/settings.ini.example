@@ -1,0 +1,6 @@
+# If you are still using this as a password you should change it:
+AUTH="jsonapi:jsonapi"
+SITE="https://archipelago.example.com"
+AWSPROFILE=default
+AWSBUCKET=mightybucket
+AWSBUCKETPREFIX=media

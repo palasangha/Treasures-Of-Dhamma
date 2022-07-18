@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]; then
+   echo "doit <folder>"
+   exit 1
+fi
+
+folder=$1
+
+if [ ! -d "$folder" ]; then
+  echo "Folder $folder does not exist!"
+  exit 1
+fi
+
+dc_name=`basename "$folder"`
+echo "Creating Digital Collection $dc_name..."
+
+#a=`./arch dc new "$dc_name" "$dc_name" "" "" | tail -n 1 | awk -F ',' '{ print $1 }' | sed -e 's/\[//g; s/"//g'`
+echo ./arch dc new "$dc_name" "$dc_name" "" ""
+uuid=`./arch dc new "$dc_name" "$dc_name" "" "" | tail -n 1 | awk -F "/" '{ print $5 }'`
+
+if [ $? -ne 0 ]; then
+   echo "Something went wrong"
+   echo $uuid
+   exit 1
+fi
+
+echo "I got UUID $uuid"
+#cd "$folder"
+find "$folder" -type f | while read i; do 
+	echo "Processing $i"; a=`basename "$i"`
+	nid=`./arch do fetch $uuid | jq ".data.attributes.drupal_internal__nid"`;  
+	./arch do new "$a" "$a" "" $nid "$i" 
+done
+

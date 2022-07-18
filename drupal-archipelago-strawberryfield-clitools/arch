@@ -1,0 +1,136 @@
+#!/bin/bash
+
+base=$(dirname $0)
+. $base/settings.ini
+. $base/functions.ini
+
+OBJ=$(abbr_object $1)
+shift
+
+if [ "$OBJ" = "help" ]; then
+        cat <<EOF
+  Usage: $(basename $0) OBJTYPE CMD ...
+        OBJTYPE - dc or do (collection or object)
+        CMD:
+          new TITLE DESC TAGS GRP [FILES]...
+            first 4 args are single arguments (tags is comma-seperated).
+          list
+          search TITLESUBSTRING
+          fetch UUID
+          fetchstrawberry UUID
+          summarize UUID
+          uploadfiles UUID [FILES]...
+          group UUID
+          tag UUID set|add|remove TAGS
+          private UUID true|false
+          download UUID
+          attachments UUID
+          addattachments UUID jsonattachments
+EOF
+        exit
+fi
+
+case $1 in
+    deploy|new|create)
+        # title desc tags grp  files
+        TITLE=$(echo "$2" | php_json_encode)
+        DESC=$(echo "$3" | php_json_encode)
+        TAGS='\u0022'${4//,/\\u0022,\\u0022}'\u0022'
+        GRP="$5"
+        shift;shift;shift;shift;shift
+        UUID=$(uuidgen)
+        processfiles "$OBJ" "$@"
+        if [ "$OBJ" = "digital_object_collection" ]; then
+            newdc "$OBJ"
+        fi
+        if [ "$OBJ" = "digital_object" ]; then
+            newdo "$OBJ"
+        fi
+        ;;
+    list)
+        # no other args for now
+        get_list "$OBJ" | straw_extract_list | straw_summarize "$OBJ"
+        ;;
+    search)
+        # search string (title)
+        titlesearch "$OBJ" "$2"  | straw_extract_list | straw_summarize "$OBJ"
+        ;;
+    # all after here take uuid as next arg and could be looped
+    fetch)
+        # 2nd arg is uuid
+        fetch "$OBJ" "$2"
+        ;;
+    fetchstraw|fetchstrawberry)
+        # uuid
+        fetch "$OBJ" "$2" | straw_extract_one
+        ;;
+    get|summarize)
+        # uuid
+        fetch "$OBJ" "$2" | straw_extract_one | straw_summarize "$OBJ"
+        ;;
+    uploadfiles|upload)
+        # uuid files
+        UUID="$2"
+        shift;shift
+        processfiles "$OBJ" "$@"
+        new=$(fetch "$OBJ" "$UUID" | straw_extract_one | addfiles | php_json_encode)
+        patchobj "$OBJ" "$UUID" "$new"
+        ;;
+    setgroup|group)
+        # uuid group
+        UUID="$2"
+        for U in $UUID; do
+            new=$(fetch "$OBJ" "$U" | straw_extract_one | jq ".ismemberof=\"$3\"" | php_json_encode)
+            patchobj "$OBJ" "$U" "$new"
+        done
+        ;;
+    tag)
+        # uuid subcommand tags
+        # arch do tag "$(arch do search geiko | jq -r '.[0]')" add Human
+        UUID="$2"
+        TAGS='["'${4//,/\",\"}'"]'
+        for U in $UUID; do
+            straw=$(fetch "$OBJ" "$U" | straw_extract_one)
+            case "$3" in
+                set)
+                    straw=$(echo "$straw" | jq ".subjects_local=$TAGS")
+                    ;;
+                add)
+                    straw=$(echo "$straw" | jq ".subjects_local+=$TAGS")
+                    ;;
+                remove)
+                    straw=$(echo "$straw" | jq ".subjects_local-=$TAGS")
+                    ;;
+            esac
+            patchobj "$OBJ" "$U" "$(echo "$straw" | php_json_encode)"
+        done
+        ;;
+    private)
+        # uuid true|false
+        for U in $2; do
+            private "$OBJ" "$U" "$3"
+        done
+        ;;
+    download)
+        # uuid
+        for UUID in $2; do
+            fetch "$OBJ" "$UUID" | straw_extract_one | strawdownloads
+        done
+        ;;
+    attachments)
+        # uuid
+        for U in $2; do
+            fetch "$OBJ" "$U" | straw_extract_one | strawattachments
+        done
+        ;;
+    addattachments)
+        # uuid attachments(json)
+        straw=$(fetch "$OBJ" "$2" | straw_extract_one)
+        straw=$(echo "$straw" | jq --argjson inp "$3" '.images += $inp.images | .models += $inp.models | .documents += $inp.documents')
+        patchobj "$OBJ" "$2" "$(echo "$straw" | php_json_encode)"
+        echo
+        ;;
+    *)
+        echo not imp yet
+        ;;
+esac
