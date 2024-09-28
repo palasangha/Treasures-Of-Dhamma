@@ -5,8 +5,8 @@ We utilize a lightweight Agile methodology for project management. All code and 
 ## Backlog Management:
 - All work would be tracked as GitHub Issues
 >- Issues can be labelled as epic, user story or task ( See Labels below for more details)
->- Each issue would also be assigned a target Iteration.
-- An iteration is (currently) a 12 week calendar window.Any issue targetted for a particular iteration is expected to be completed within that iteration.
+>- Each issue would also be assigned a target Quarter.
+- An Quarter is (currently) a 12 week calendar window.Any issue targetted for a particular quarter is expected to be completed within that quarter.
 - A single product backlog consolidates epics, user stories, and other issues.
 >- Dedicated _project boards_ offer clear visualizations of the backlog, including both the complete backlog and ongoing work.
 
@@ -14,7 +14,7 @@ We utilize a lightweight Agile methodology for project management. All code and 
 All work would be managed in a project - [RAG MultiModal Project](https://github.com/orgs/palasangha/projects/11/)
 This will have 2 views
 - Backlog view : showing the entire backlog
-- Current Iteration:  work that is planned for current iteration
+- Current Quarter:  work that is planned for current quarter
 
 
 ## Project Planning:
