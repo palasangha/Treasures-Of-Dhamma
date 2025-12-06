@@ -37,6 +37,8 @@ Labels represent various types of issue or relavant projects
 > - Project.Audio:Any tasks related to AudioModal
 > - Project.Video:Any tasks related to VideoModal
 > - Project.MultiModal:Any tasks related to MultiModal
+>
+Each issue will have a proper Title, Description and Expected output
 	
 	
 ### Iteration
