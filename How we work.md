@@ -28,7 +28,7 @@ This will have 2 views
 ### Labels
 Labels represent various types of issue or relavant projects
 > - Type.Bug: Bug type issue
-> - Type.Epic : Higher level customer , will contain a list of userstories
+> - Type.Epic : Higher level user facing deliversble , will contain a list of userstories
 > - Type.UserStory : Unit of work., can be user facing or internal
 > - Type.Task : Broken down unit of work to complete a user story
 		
